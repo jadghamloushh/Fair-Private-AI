@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+// LoanApplication.js
+import React, { useState, useContext, useEffect } from "react";
+import { AuthContext } from "./context/AuthContext";
 import "./App.css";
 
 function LoanApplication() {
+  const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     name: "",
     gender: "male",
@@ -12,46 +15,56 @@ function LoanApplication() {
     loanAmount: "",
     annualIncome: "",
     creditScore: "",
+    epsilon: "1", // default value for normal users
   });
-  const [loading, setLoading] = useState(false);
-  const [prediction, setPrediction] = useState(null);
+
+  // Update epsilon default based on user role when user data becomes available.
+  useEffect(() => {
+    if (user && user.role) {
+      if (user.role === "normal") {
+        setFormData((prev) => ({ ...prev, epsilon: "1" }));
+      } else if (user.role === "employee") {
+        setFormData((prev) => ({ ...prev, epsilon: "2" }));
+      } else if (user.role === "admin") {
+        // For admin, default to 1 but allow changing
+        setFormData((prev) => ({ ...prev, epsilon: "1" }));
+      }
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    // Prevent non-admin users from modifying epsilon.
+    if (name === "epsilon" && user && user.role !== "admin") {
+      return;
+    }
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    setPrediction(null);
-    // Simulate an API call
-    setTimeout(() => {
-      const isApproved = Math.random() > 0.5;
-      setPrediction(isApproved ? "Approved" : "Denied");
-      setLoading(false);
-    }, 1500);
+    // Simulate an API call or process the form data.
+    console.log("Form submitted:", formData);
+    // You can add your API integration logic here.
   };
 
   return (
     <div className="loan-form-container">
       <h2>Loan Application Form</h2>
       <form onSubmit={handleSubmit}>
+        {/* Name */}
         <div className="form-group">
-          <label htmlFor="age">Age:</label>
+          <label htmlFor="name">Name:</label>
           <input
-            type="number"
-            id="age"
-            name="age"
-            value={formData.age || ""}
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
             onChange={handleChange}
             required
           />
         </div>
-
+        {/* Gender */}
         <div className="form-group">
           <label htmlFor="gender">Gender:</label>
           <select
@@ -64,6 +77,7 @@ function LoanApplication() {
             <option value="female">Female</option>
           </select>
         </div>
+        {/* Education */}
         <div className="form-group">
           <label htmlFor="education">Education:</label>
           <select
@@ -78,6 +92,7 @@ function LoanApplication() {
             <option value="phd">PhD</option>
           </select>
         </div>
+        {/* Loan Intent */}
         <div className="form-group">
           <label htmlFor="loanIntent">Loan Intent:</label>
           <select
@@ -91,6 +106,7 @@ function LoanApplication() {
             <option value="education">Education</option>
           </select>
         </div>
+        {/* Home Ownership */}
         <div className="form-group">
           <label htmlFor="homeOwnership">Home Ownership:</label>
           <select
@@ -99,13 +115,14 @@ function LoanApplication() {
             value={formData.homeOwnership}
             onChange={handleChange}
           >
-            <option value="own">Own</option>
             <option value="rent">Rent</option>
+            <option value="own">Own</option>
             <option value="mortgage">Mortgage</option>
           </select>
         </div>
+        {/* Previous Defaults */}
         <div className="form-group">
-          <label htmlFor="previousDefaults">Previous Loan Defaults:</label>
+          <label htmlFor="previousDefaults">Previous Defaults:</label>
           <select
             id="previousDefaults"
             name="previousDefaults"
@@ -116,6 +133,7 @@ function LoanApplication() {
             <option value="yes">Yes</option>
           </select>
         </div>
+        {/* Loan Amount */}
         <div className="form-group">
           <label htmlFor="loanAmount">Loan Amount ($):</label>
           <input
@@ -127,6 +145,7 @@ function LoanApplication() {
             required
           />
         </div>
+        {/* Annual Income */}
         <div className="form-group">
           <label htmlFor="annualIncome">Annual Income ($):</label>
           <input
@@ -138,6 +157,7 @@ function LoanApplication() {
             required
           />
         </div>
+        {/* Credit Score */}
         <div className="form-group">
           <label htmlFor="creditScore">Credit Score:</label>
           <input
@@ -149,35 +169,35 @@ function LoanApplication() {
             required
           />
         </div>
+        {/* Epsilon Field */}
         <div className="form-group">
-          <label htmlFor="epsilon">Select Epsilon:</label>
-          <select
-            id="epsilon"
-            name="epsilon"
-            value={formData.epsilon}
-            onChange={handleChange}
-          >
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="4">4</option>
-            <option value="8">8</option>
-          </select>
+          <label htmlFor="epsilon">Epsilon:</label>
+          {user && user.role === "admin" ? (
+            <select
+              id="epsilon"
+              name="epsilon"
+              value={formData.epsilon}
+              onChange={handleChange}
+            >
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="4">4</option>
+              <option value="8">8</option>
+            </select>
+          ) : (
+            <input
+              type="text"
+              id="epsilon"
+              name="epsilon"
+              value={formData.epsilon}
+              readOnly
+            />
+          )}
         </div>
-
-        <button type="submit" className="submit-button" disabled={loading}>
-          {loading ? "Processing..." : "Submit Application"}
+        <button type="submit" className="submit-button">
+          Submit Application
         </button>
       </form>
-      {prediction && (
-        <div className="result">
-          <h3>Prediction: {prediction}</h3>
-          <p>
-            {prediction === "Approved"
-              ? "Congratulations! Your loan has been approved."
-              : "We are sorry, your loan has been denied."}
-          </p>
-        </div>
-      )}
     </div>
   );
 }

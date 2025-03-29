@@ -1,11 +1,11 @@
-// Login.js (for normal users)
+// AdminLogin.js
 import React, { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
 import "./App.css";
 
-function Login() {
-  const [formData, setFormData] = useState({ email: "", password: "" });
+function AdminLogin() {
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [loginMessage, setLoginMessage] = useState("");
   const navigate = useNavigate();
   const { setToken, setUser } = useContext(AuthContext);
@@ -18,7 +18,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/api/login", {
+      const response = await fetch("http://localhost:5000/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -30,7 +30,7 @@ function Login() {
         setLoginMessage(data.message);
         navigate("/apply"); // Redirect to loan application page
       } else {
-        setLoginMessage(data.message || "Login failed.");
+        setLoginMessage(data.message || "Admin login failed.");
       }
     } catch (error) {
       setLoginMessage("An error occurred. Please try again.");
@@ -39,16 +39,16 @@ function Login() {
 
   return (
     <div className="login-container">
-      <h2>User Login</h2>
+      <h2>Admin Login</h2>
       {loginMessage && <p className="login-message">{loginMessage}</p>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="email">Email:</label>
+          <label htmlFor="username">Username:</label>
           <input
-            type="email"
-            name="email"
-            id="email"
-            value={formData.email}
+            type="text"
+            name="username"
+            id="username"
+            value={formData.username}
             onChange={handleChange}
             required
           />
@@ -65,14 +65,11 @@ function Login() {
           />
         </div>
         <button type="submit" className="submit-button">
-          Login as User
+          Login as Admin
         </button>
       </form>
-      <p className="register-link">
-        Don't have an account? <Link to="/register">Register here</Link>.
-      </p>
     </div>
   );
 }
 
-export default Login;
+export default AdminLogin;

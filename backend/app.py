@@ -1,8 +1,6 @@
 import os
 import uuid
 import datetime
-from functools import wraps
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,111 +9,133 @@ import jwt
 app = Flask(__name__)
 CORS(app)
 
-# Use environment variable for secret key (set a secure key in production)
+# Use an environment variable for the secret key in production.
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'testest')
 
 # In-memory user store (for demo purposes only)
 users = []
 
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
-        # Token is expected in the x-access-token header
-        if 'x-access-token' in request.headers:
-            token = request.headers['x-access-token']
-        if not token:
-            return jsonify({'message': 'Token is missing!'}), 401
+# --- Create special users manually if they do not already exist ---
 
-        try:
-            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-            current_user = next((user for user in users if user['id'] == data['id']), None)
-            if not current_user:
-                raise Exception("User not found")
-        except Exception as e:
-            return jsonify({'message': 'Token is invalid!', 'error': str(e)}), 401
+# Create bank admin ("messi") with password "password"
+admin = next((u for u in users if u.get("username") == "messi" and u.get("role") == "admin"), None)
+if not admin:
+    admin = {
+        'id': str(uuid.uuid4()),
+        'username': 'messi',
+        'email': 'messi@bank.com',
+        'password': generate_password_hash("password", method='pbkdf2:sha256'),
+        'role': 'admin'
+    }
+    users.append(admin)
 
-        return f(current_user, *args, **kwargs)
-    return decorated
+# Create a sample bank employee ("employee") with password "employee123"
+employee = next((u for u in users if u.get("username") == "employee" and u.get("role") == "employee"), None)
+if not employee:
+    employee = {
+        'id': str(uuid.uuid4()),
+        'username': 'employee',
+        'email': 'employee@bank.com',
+        'password': generate_password_hash("employee123", method='pbkdf2:sha256'),
+        'role': 'employee'
+    }
+    users.append(employee)
+
+# --- Normal user registration and login ---
 
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
-    if not data:
-        return jsonify({'message': 'No input data provided.'}), 400
-
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
-    
-    # Validate required fields
+    # Normal users are registered with role "normal" by default.
     if not username or not email or not password:
         return jsonify({'message': 'Please fill in all fields.'}), 400
-
-    # Check if user already exists
     if any(user['email'] == email for user in users):
         return jsonify({'message': 'User already exists.'}), 400
-
-    # Hash the password and generate a unique id
     hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
     new_user = {
         'id': str(uuid.uuid4()),
         'username': username,
         'email': email,
-        'password': hashed_password
+        'password': hashed_password,
+        'role': 'normal'
     }
     users.append(new_user)
-    return jsonify({'message': 'User registered successfully.'}), 201
+    return jsonify({'message': 'User registered successfully.', 'role': 'normal'}), 201
 
 @app.route('/api/login', methods=['POST'])
 def login():
+    # This endpoint is for normal user login.
     data = request.get_json()
-    if not data:
-        return jsonify({'message': 'No input data provided.'}), 400
-
     email = data.get('email')
     password = data.get('password')
-    
-    # Validate required fields
     if not email or not password:
         return jsonify({'message': 'Please fill in all fields.'}), 400
-
-    # Find the user by email
-    user = next((user for user in users if user['email'] == email), None)
+    user = next((user for user in users if user['email'] == email and user['role'] == 'normal'), None)
     if not user:
         return jsonify({'message': 'User not found.'}), 400
-
-    # Verify the password
     if not check_password_hash(user['password'], password):
         return jsonify({'message': 'Invalid credentials.'}), 400
-
-    # Create JWT token (expires in 1 hour)
     token = jwt.encode({
         'id': user['id'],
         'email': user['email'],
+        'role': user['role'],
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     }, app.config['SECRET_KEY'], algorithm='HS256')
+    return jsonify({'token': token, 'message': 'Logged in successfully.', 'role': user['role']}), 200
 
-    return jsonify({'token': token, 'message': 'Logged in successfully.'}), 200
+# --- Admin login endpoint ---
 
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    # Check if the credentials match the admin ("messi")
+    admin_user = next((u for u in users if u.get("username") == "messi" and u.get("role") == "admin"), None)
+    if not admin_user:
+        return jsonify({'message': 'Admin user not found.'}), 400
+    if username != admin_user['username'] or not check_password_hash(admin_user['password'], password):
+        return jsonify({'message': 'Invalid admin credentials.'}), 400
+    token = jwt.encode({
+        'id': admin_user['id'],
+        'email': admin_user['email'],
+        'role': admin_user['role'],
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+    }, app.config['SECRET_KEY'], algorithm='HS256')
+    # Ensure token is a string if it's a bytes object
+    if isinstance(token, bytes):
+        token = token.decode('utf-8')
+    return jsonify({'token': token, 'message': 'Admin logged in successfully.', 'role': admin_user['role']}), 200
+
+
+
+# --- Employee login endpoint ---
+
+@app.route('/api/employee/login', methods=['POST'])
+def employee_login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    employee_user = next((u for u in users if u.get("username") == username and u.get("role") == "employee"), None)
+    if not employee_user:
+        return jsonify({'message': 'Employee not found.'}), 400
+    if not check_password_hash(employee_user['password'], password):
+        return jsonify({'message': 'Invalid credentials.'}), 400
+    token = jwt.encode({
+        'id': employee_user['id'],
+        'email': employee_user['email'],
+        'role': employee_user['role'],
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+    }, app.config['SECRET_KEY'], algorithm='HS256')
+    return jsonify({'token': token, 'message': 'Employee logged in successfully.', 'role': employee_user['role']}), 200
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
-    # For a stateless JWT approach, logout is handled on the client-side by removing the token.
-    # Here, we simply return a success message.
+    # In a stateless JWT setup, logout is handled on the client side.
     return jsonify({'message': 'Logged out successfully.'}), 200
 
-
-# @app.route('/api/profile', methods=['GET'])
-# @token_required
-# def profile(current_user):
-#     # Return the current user's profile information (excluding the password)
-#     user_data = {
-#         'id': current_user['id'],
-#         'username': current_user['username'],
-#         'email': current_user['email']
-#     }
-#     return jsonify({'user': user_data}), 200
-
-# if __name__ == '__main__':
-#     app.run(debug=True, port=5000)
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)

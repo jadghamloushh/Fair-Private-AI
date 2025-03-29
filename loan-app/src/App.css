@@ -1,0 +1,253 @@
+/* Global Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f7f8;
+  color: #333;
+}
+
+/* Dashboard Header & Navbar */
+.dashboard-header {
+  background: #007acc;
+  padding: 10px 20px;
+  color: white;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.nav-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.login-button {
+  background: #005fa3;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+/* Dashboard Content & Footer */
+.dashboard-content {
+  padding: 20px;
+}
+
+.dashboard-footer {
+  background: #007acc;
+  color: white;
+  text-align: center;
+  padding: 10px;
+}
+
+/* Home Page Styles */
+.home-container {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  max-width: 800px;
+  margin: 20px auto;
+  text-align: center;
+}
+
+/* Form Styles for both Login and Loan Application */
+.loan-form-container, .login-container {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+.loan-form-container h2, .login-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #007acc;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccd0d5;
+  border-radius: 4px;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 12px;
+  background: #007acc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.submit-button:hover {
+  background: #005fa3;
+}
+
+.result {
+  margin-top: 20px;
+  text-align: center;
+  padding: 15px;
+  border: 1px solid #ccd0d5;
+  border-radius: 4px;
+  background: #e9f5ff;
+}
+
+.result h3 {
+  margin: 0;
+  color: #007acc;
+}
+
+/* Additional styling for login messages */
+.login-message {
+  text-align: center;
+  margin-bottom: 10px;
+  color: green;
+}
+
+/* Homepage Styles */
+.home-page {
+  width: 100%;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #007acc, #00aaff);
+  color: white;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.hero-content h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.hero-content p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 12px 30px;
+  font-size: 1.2rem;
+  color: #007acc;
+  background: #ffffff;
+  border-radius: 30px;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+.cta-button:hover {
+  background: #f0f0f0;
+}
+
+/* Features Section */
+.features-section {
+  padding: 60px 20px;
+  background: #f9f9f9;
+  text-align: center;
+}
+
+.features-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  color: #007acc;
+}
+
+.features-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.feature-card {
+  background: white;
+  width: 300px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.feature-card h3 {
+  margin-top: 0;
+  color: #007acc;
+}
+
+.feature-card p {
+  font-size: 1rem;
+  color: #555;
+}
+
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccd0d5;
+  border-radius: 4px;
+}
+
+#epsilon {
+  background-color: #fff;
+  color: #333;
+}
+
+.epsilon-select {
+  border: 2px solid #007acc;
+}
+
+#epsilon {
+  background-color: #fff; /* bright yellow for testing */
+  color: #333;
+}
